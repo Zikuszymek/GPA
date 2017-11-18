@@ -8,7 +8,8 @@ data class PlaceSearched(
         val geometry: Geometry? = null,
         val icon: String? = null,
         val id: String? = null,
-        val name: String? = null
+        val name: String? = null,
+        val vicinity: String? = null
 )
 
 data class Geometry(

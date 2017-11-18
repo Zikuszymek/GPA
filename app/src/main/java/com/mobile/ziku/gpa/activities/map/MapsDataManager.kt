@@ -6,17 +6,17 @@ import com.mobile.ziku.gpa.model.PlaceSearched
 import io.reactivex.Single
 import java.util.*
 import javax.inject.Inject
+import javax.inject.Named
 import kotlin.Comparator
 
 class MapsDataManager @Inject constructor(
-        val placesService: RetrofitService.PlacesService
+        val placesService: RetrofitService.PlacesService,
+        @Named("API_PLACES_KEY") val API_KEY: String
 ) : MapsContractor.DataManager {
 
     companion object {
         const val MAX_RADIUS = 10 * 1000
         const val MAX_RESULT_ITEM = 3
-        const val API_KEY = "AIzaSyCLkt-UURtUeSbwLb-8u1dvtD5m6fm8pgg"
-
     }
 
     override fun getDataForPlace(place: String, location: Location): Single<List<PlaceSearched>> {
@@ -28,7 +28,7 @@ class MapsDataManager @Inject constructor(
                     val filteredResult = filterResult(result.results, location)
                     emitter.onSuccess(filteredResult)
                 } else {
-                    emitter.onError(Exception("exception"))
+                    emitter.onError(Exception("Empty result"))
                 }
             } catch (exception: Exception) {
                 emitter.onError(exception)

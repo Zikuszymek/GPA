@@ -1,5 +1,11 @@
 <resources>
     <string name="app_name">GPA</string>
     <string name="title_activity_maps">Map</string>
-    <string name="my_position">Ja</string>
+    <string name="my_location">Ja</string>
+    <string name="search_hint">Czego szukasz?</string>
+
+    <!--MESSAGES-->
+    <string name="localization_error">Wystąpił problem podczas określania lokalizacji</string>
+    <string name="search_result_problem">Wystąpił problem podczas pobierania wyników</string>
+    <string name="no_search_result">Brak wyników dla wskazanej frazy</string>
 </resources>

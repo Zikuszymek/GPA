@@ -5,10 +5,11 @@ import android.databinding.ViewDataBinding
 import android.support.v7.widget.RecyclerView
 import android.view.LayoutInflater
 import android.view.ViewGroup
+import com.google.android.gms.maps.model.LatLng
 import com.mobile.ziku.gpa.R
 import com.mobile.ziku.gpa.model.PlaceSearched
 
-class PlaceRecyclerAdapter : RecyclerView.Adapter<PlaceViewHolder>() {
+class PlaceRecyclerAdapter(val moveCameraToLocation : (LatLng, Float) -> Unit) : RecyclerView.Adapter<PlaceViewHolder>() {
 
     var placesList = mutableListOf<PlaceSearched>()
 
@@ -19,7 +20,7 @@ class PlaceRecyclerAdapter : RecyclerView.Adapter<PlaceViewHolder>() {
     override fun onCreateViewHolder(parent: ViewGroup?, viewType: Int): PlaceViewHolder {
         val inflater = LayoutInflater.from(parent?.context)
         val viewDataBinding = DataBindingUtil.inflate<ViewDataBinding>(inflater,R.layout.place_view_holder,parent,false)
-        return PlaceViewHolder(viewDataBinding)
+        return PlaceViewHolder(viewDataBinding, moveCameraToLocation)
     }
 
     override fun getItemCount() = placesList.size

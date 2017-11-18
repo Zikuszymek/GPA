@@ -1,51 +1,64 @@
 package com.mobile.ziku.gpa.activities.map
 
-import android.Manifest
 import android.content.Context
-import android.location.Location
 import android.os.Bundle
-import android.support.v4.content.ContextCompat
 import android.support.v7.widget.LinearLayoutManager
 import android.support.v7.widget.SearchView
-import com.google.android.gms.location.LocationServices
+import android.text.TextUtils
+import android.transition.TransitionManager
+import android.view.View
 import com.google.android.gms.maps.CameraUpdateFactory
 
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
-import com.google.android.gms.maps.model.Marker
 import com.google.android.gms.maps.model.MarkerOptions
 import com.mobile.ziku.gpa.R
 import com.mobile.ziku.gpa.activities.BaseActivity
 import com.mobile.ziku.gpa.model.PlaceSearched
 import com.mobile.ziku.gpa.recyclers.PlaceRecyclerAdapter
 import kotlinx.android.synthetic.main.activity_maps.*
-import timber.log.Timber
 import javax.inject.Inject
 import android.view.inputmethod.InputMethodManager
-import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import com.google.android.gms.maps.model.LatLng
-
+import com.mobile.ziku.gpa.activities.dialogs.SimpleDialog
+import com.mobile.ziku.gpa.enums.MessageType
+import com.mobile.ziku.gpa.managers.PermissionManager
 
 class MapsActivity : BaseActivity(), OnMapReadyCallback, MapsContractor.View {
 
     @Inject lateinit var presenter: MapsContractor.Presenter
-    @Inject lateinit var verticalLayputManager: LinearLayoutManager
+    @Inject lateinit var verticalLayoutManager: LinearLayoutManager
+    @Inject lateinit var simpleDialog: SimpleDialog
+    @Inject lateinit var permissionManager: PermissionManager
 
-    private lateinit var mMap: GoogleMap
+    private var googleMap: GoogleMap? = null
+    private val resultAdapter by lazy { PlaceRecyclerAdapter(this::moveCameraToLocation) }
+    private var listIsExpanded = false
 
-    private val resultAdapter by lazy { PlaceRecyclerAdapter() }
-    private val MyLocalization by lazy { getString(R.string.my_position)}
+    companion object {
+        const val CITY_ZOOM = 15f
+        const val PLACE_ZOOM = 18f
+    }
 
-    private var myMarker: Marker? = null
-    private var locationMarkers = mutableListOf<Marker>()
-    private var expandedList = false
-    private var animationInProgress = false
+    override fun onMapReady(googleMap: GoogleMap) {
+        this.googleMap = googleMap
+        enableMyLocalizationOnMap()
+    }
+
+    @SuppressWarnings("MissingPermission")
+    private fun enableMyLocalizationOnMap() {
+        if (permissionManager.isLocationPermissionEnabled(this) { enableMyLocalizationOnMap() }) {
+            this.googleMap?.isMyLocationEnabled = true
+            this.googleMap?.uiSettings?.isMyLocationButtonEnabled = false
+            presenter.updateCurrentLocalization()
+        }
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_maps)
-        val mapFragment = map as SupportMapFragment
+        val mapFragment = supportFragmentManager.findFragmentById(R.id.map) as SupportMapFragment
         mapFragment.getMapAsync(this)
         initUiComponents()
     }
@@ -58,57 +71,73 @@ class MapsActivity : BaseActivity(), OnMapReadyCallback, MapsContractor.View {
     }
 
     private fun initExpandButtonList() {
+        expandable_button.setOnClickListener {
+            beginDelayedTransition()
+            if (listIsExpanded) {
+                collapseRecyclerView()
+            } else {
+                expandRecyclerView()
+            }
+        }
+    }
 
+    private fun expandRecyclerView(){
+        listIsExpanded = true
+        beginDelayedTransition()
+        search_result_recycler.visibility = View.VISIBLE
+    }
+
+    private fun collapseRecyclerView(){
+        listIsExpanded = false
+        beginDelayedTransition()
+        search_result_recycler.visibility = View.GONE
     }
 
     private fun initSearchView() {
-        search_view.setOnClickListener {
-            search_view.isIconified = false
-        }
-        search_view.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
-            override fun onQueryTextChange(newText: String?): Boolean {
-                return false
-            }
+        search_view.apply {
+            queryHint = getString(R.string.search_hint)
+            setOnClickListener { search_view.isIconified = false }
+            setOnQueryTextListener(object : SearchView.OnQueryTextListener {
+                override fun onQueryTextChange(newText: String?): Boolean {
+                    return false
+                }
 
-            override fun onQueryTextSubmit(query: String?): Boolean {
-                hideKeyboard()
-                presenter.searchForPlace(query)
-                return true
-            }
-        })
+                override fun onQueryTextSubmit(query: String?): Boolean {
+                    if (query != null && !TextUtils.isEmpty(query)) {
+                        hideKeyboard()
+                        searchForPhrase(query)
+                    }
+                    return true
+                }
+            })
+        }
+    }
+
+    private fun searchForPhrase(query: String) {
+        if (permissionManager.isLocationPermissionEnabled(this) { searchForPhrase(query) }) {
+            progressBarVisibility(true)
+            presenter.searchForPlace(query)
+        }
     }
 
     private fun initRecycleView() {
         search_result_recycler.apply {
             adapter = resultAdapter
-            layoutManager = verticalLayputManager
+            layoutManager = verticalLayoutManager
         }
     }
 
-    private fun initMyLocationButton(){
+    private fun initMyLocationButton() {
         my_current_location.setOnClickListener {
-            presenter.updateCurrentLocalization()
+            if (permissionManager.isLocationPermissionEnabled(this) { presenter.updateCurrentLocalization() })
+                presenter.updateCurrentLocalization()
         }
     }
 
-    override fun loadingDataVisibility(visibility: Boolean) {
+    override fun onBackPressed() {
+        hideKeyboard()
+        super.onBackPressed()
     }
-
-    override fun updateMyCurrentLocation(location: Location?) {
-        if(location != null) {
-            val myLocation = LatLng(location.latitude, location.longitude)
-            mMap.moveCamera(CameraUpdateFactory.newLatLng(myLocation))
-            if (myMarker != null) {
-                myMarker?.position = myLocation
-            } else {
-                myMarker = mMap.addMarker(MarkerOptions().position(myLocation).title(MyLocalization))
-            }
-            mMap.animateCamera(CameraUpdateFactory.newLatLng(myLocation), 2000, null)
-        } else {
-            myMarker?.remove()
-        }
-    }
-
 
     override fun onResume() {
         super.onResume()
@@ -120,51 +149,49 @@ class MapsActivity : BaseActivity(), OnMapReadyCallback, MapsContractor.View {
         presenter.removeView()
     }
 
-    override fun displaySearchResult() {
+    override fun displayMessage(messageType: MessageType) {
+        val messageString = when (messageType) {
+            MessageType.LOCALIZATION_ERROR -> R.string.localization_error
+            MessageType.NO_RESULT -> R.string.no_search_result
+            MessageType.SEARCH_PROBLEM -> R.string.search_result_problem
+        }
+        simpleDialog.showDialog(getString(messageString))
     }
 
-    override fun displayMessage() {
+    override fun handleSearchResult(placeResponse: List<PlaceSearched>) {
+        progressBarVisibility(false)
+        expandRecyclerView()
+        resultAdapter.placesList = placeResponse.toMutableList()
+        resultAdapter.notifyDataSetChanged()
+        hideKeyboard()
+    }
+
+    override fun moveCameraToLocation(latLng: LatLng, zoomLevel: Float) {
+        googleMap?.animateCamera(CameraUpdateFactory.newLatLngZoom(latLng, zoomLevel), 1000, null)
+    }
+
+    override fun addMarker(markerOptions: MarkerOptions) = googleMap?.addMarker(markerOptions)
+
+    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        permissionManager.onRequestPermissionsResult(requestCode, permissions, grantResults)
+    }
+
+    private fun progressBarVisibility(visibility: Boolean) {
+        beginDelayedTransition()
+        when (visibility) {
+            true -> progress_bar.visibility = View.VISIBLE
+            false -> progress_bar.visibility = View.GONE
+        }
+    }
+
+    private fun beginDelayedTransition() {
+        TransitionManager.beginDelayedTransition(findViewById(android.R.id.content))
     }
 
     private fun hideKeyboard() {
         val imm = getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
         imm.hideSoftInputFromWindow(currentFocus.windowToken, 0)
-    }
-
-    override fun handleSearchResult(placeResponse: List<PlaceSearched>) {
-        resultAdapter.placesList = placeResponse.toMutableList()
-        resultAdapter.notifyDataSetChanged()
-        hideKeyboard()
-        handleMarkersUpdate(placeResponse)
-    }
-
-    private fun handleMarkersUpdate(placeResponse: List<PlaceSearched>) {
-        locationMarkers.forEach { it.remove() }
-        locationMarkers.clear()
-        placeResponse.forEach {
-            val location = it.geometry?.location
-            if (location != null && location.lat != null && location.lng != null) {
-                val marker = MarkerOptions().position(LatLng(location.lat, location.lng))
-                        .title(it.name).icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_AZURE) )
-                val markerOnMap = mMap.addMarker(marker)
-                locationMarkers.add(markerOnMap)
-            }
-        }
-    }
-
-    override fun onMapReady(googleMap: GoogleMap) {
-        Timber.d("Map is ready")
-        mMap = googleMap
-        ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
-        mMap.isMyLocationEnabled = true
-        mMap.uiSettings.isMyLocationButtonEnabled = false
-        LocationServices.getFusedLocationProviderClient(this)
-    }
-
-    private fun isLocationPermissionEnabled(): Boolean {
-        var locationPermissions = ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
-//        locationPermissions.
-        return false
     }
 
 }

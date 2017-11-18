@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <!--SP-->
+    <dimen name="search_view_text">24sp</dimen>
+    <dimen name="result_name_text">16sp</dimen>
+    <dimen name="description_text">12sp</dimen>
+
+    <!--DP-->
+    <dimen name="base_margin">8dp</dimen>
+    <dimen name="big_margin">16dp</dimen>
+    <dimen name="base_padding">8dp</dimen>
+    <dimen name="place_icon_size">30dp</dimen>
+</resources>

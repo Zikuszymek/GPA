@@ -13,33 +13,41 @@
     <android.support.constraint.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="@color/cardview_shadow_end_color">
+        android:background="@drawable/place_holder"
+        android:padding="@dimen/base_padding">
 
         <ImageView
             android:id="@+id/place_image"
-            android:layout_width="30dp"
-            android:layout_height="30dp"
-            android:layout_marginBottom="8dp"
-            android:layout_marginStart="8dp"
-            android:layout_marginTop="8dp"
+            android:layout_width="@dimen/place_icon_size"
+            android:layout_height="@dimen/place_icon_size"
+            android:layout_marginBottom="@dimen/base_margin"
+            android:layout_marginStart="@dimen/base_margin"
+            android:layout_marginTop="@dimen/base_margin"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
             app:srcCompat="@{place.icon}"
-            tools:src="@drawable/ic_launcher_background"/>
+            tools:src="@drawable/ic_launcher_background" />
 
         <TextView
             android:id="@+id/place_name"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="8dp"
-            android:layout_marginStart="8dp"
-            android:layout_marginTop="8dp"
+            style="@style/MainHolderText"
             android:text="@{place.name}"
-            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintBottom_toTopOf="@+id/vicinity"
+            app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toEndOf="@+id/place_image"
             app:layout_constraintTop_toTopOf="parent"
-            tools:text="place" />
+            tools:text="Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad " />
+
+        <TextView
+            android:id="@+id/vicinity"
+            style="@style/DescriptionHolderText"
+            android:text="@{place.vicinity}"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toEndOf="@+id/place_image"
+            app:layout_constraintEnd_toEndOf="parent"
+            tools:text="vicinity" />
+
     </android.support.constraint.ConstraintLayout>
 
 </layout>
