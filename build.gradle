@@ -27,14 +27,20 @@ ext{
     retrofitVersion = '2.3.0'
     okhttpVersion = '3.9.0'
     moshiVersion = '1.5.0'
+    mockitoVersion = '2.7.22'
     architecturalComponentVersion = '1.0.0-alpha9-1'
-    pagingVersion = '1.0.0-alpha1'
     rxAndroidVersion = '2.0.1'
     rxJavaVersion = '2.1.3'
+    retrofitRxJavaAdapterVersion = '1.0.0'
     moshiConverterVersion = '2.3.0'
     timberVersion = '4.5.1'
     glideVersion = '4.2.0'
-    butterKnifeVersion = '8.8.1'
+    googleServices = '11.6.0'
+    constratintVersion = '1.0.2'
+    dataBindingVersion = '3.0.0'
+    expressoVersion = '3.0.1'
+    testRunnerVersion = '1.0.1'
+    jUnitVersion = '4.12'
 }
 
 task clean(type: Delete) {
