@@ -2,12 +2,12 @@ package com.mobile.ziku.gpa.activities.map
 
 import android.location.Location
 import com.mobile.ziku.gpa.http.RetrofitService
+import com.mobile.ziku.gpa.managers.DistanceComparator
 import com.mobile.ziku.gpa.model.PlaceSearched
 import io.reactivex.Single
 import java.util.*
 import javax.inject.Inject
 import javax.inject.Named
-import kotlin.Comparator
 
 class MapsDataManager @Inject constructor(
         val placesService: RetrofitService.PlacesService,
@@ -32,6 +32,8 @@ class MapsDataManager @Inject constructor(
                 }
             } catch (exception: Exception) {
                 emitter.onError(exception)
+            } catch (exception: java.lang.Exception){
+                emitter.onError(exception)
             }
         }
     }
@@ -42,32 +44,9 @@ class MapsDataManager @Inject constructor(
 
     private fun filterResult(results: List<PlaceSearched>, myLocation: Location): List<PlaceSearched> {
         if (results.size > 3) {
-            return results.sortedWith(Comparator { placeOne, placeTwo ->
-                compareDistance(placeOne, placeTwo, myLocation)
-            }).take(MAX_RESULT_ITEM)
+            return results.sortedWith(DistanceComparator(myLocation)).take(MAX_RESULT_ITEM)
         }
         return results
-    }
-
-    private fun compareDistance(placeOne: PlaceSearched, placeTwo: PlaceSearched, myLocation: Location): Int {
-        val locationOne = getLocationFromPlace(placeOne, "One")
-        val locationTwo = getLocationFromPlace(placeTwo, "Two")
-        val placeOneDistance = myLocation.distanceTo(locationOne)
-        val placeTwoDistance = myLocation.distanceTo(locationTwo)
-        return when {
-            placeOneDistance > placeTwoDistance -> 1
-            placeOneDistance == placeTwoDistance -> 0
-            else -> -1
-        }
-    }
-
-    private fun getLocationFromPlace(placeSearched: PlaceSearched, locationName: String): Location {
-        val location = Location(locationName)
-        location.apply {
-            latitude = placeSearched.geometry?.location?.lat ?: 0.0
-            longitude = placeSearched.geometry?.location?.lng ?: 0.0
-        }
-        return location
     }
 
 }

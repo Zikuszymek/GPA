@@ -13,12 +13,13 @@ import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.schedulers.Schedulers
 import javax.inject.Inject
 import javax.inject.Named
+import com.google.android.gms.maps.model.LatLngBounds
 
 class MapsPresenter @Inject constructor(
         val compositeDisposable: CompositeDisposable,
         val dataManager: MapsDataManager,
         val fusedLocationProviderClient: FusedLocationProviderClient,
-        @Named("MyLocation") val myLocalization : String
+        @Named("MyLocation") val myLocalization: String
 ) : MapsContractor.Presenter {
 
     var view: MapsContractor.View? = null
@@ -44,11 +45,11 @@ class MapsPresenter @Inject constructor(
     @SuppressWarnings("MissingPermission")
     override fun searchForPlace(place: String) {
         fusedLocationProviderClient.lastLocation
-                .addOnSuccessListener { searchForQuery(place, it) }
+                .addOnSuccessListener { searchForPlace(place, it) }
                 .addOnFailureListener { view?.displayMessage(MessageType.LOCALIZATION_ERROR) }
     }
 
-    private fun searchForQuery(place: String, location: Location) {
+    private fun searchForPlace(place: String, location: Location) {
         compositeDisposable.add(
                 dataManager.getDataForPlace(place, location)
                         .subscribeOn(Schedulers.io())
@@ -56,42 +57,65 @@ class MapsPresenter @Inject constructor(
                         .subscribe({
                             if (it.isNotEmpty()) {
                                 handleMarkersUpdate(it)
+                                zoomMapAccordingToMarkers()
                                 view?.handleSearchResult(it)
                             } else {
+                                deleteAllMarkers()
                                 view?.displayMessage(MessageType.NO_RESULT)
                             }
                         }, {
+                            deleteAllMarkers()
                             view?.displayMessage(MessageType.SEARCH_PROBLEM)
                         })
         )
     }
 
-    fun updateMyCurrentLocationAnMoveCamerra(location: Location?) {
+    private fun updateMyCurrentLocationAnMoveCamerra(location: Location?) {
         if (location != null) {
             val myLocation = LatLng(location.latitude, location.longitude)
             if (myMarker != null) {
                 myMarker?.position = myLocation
             } else {
                 val markerOptions = MarkerOptions().position(myLocation).title(myLocalization)
-                myMarker = view?.addMarker(markerOptions)
+                myMarker = view?.addMarkerToMap(markerOptions)
             }
-            view?.moveCameraToLocation(myLocation, MapsActivity.CITY_ZOOM)
+            view?.moveMapCameraToLocation(myLocation, MapsActivity.CITY_ZOOM)
         } else {
+            view?.displayMessage(MessageType.LOCALIZATION_ERROR)
             myMarker?.remove()
         }
     }
 
     private fun handleMarkersUpdate(placeResponse: List<PlaceSearched>) {
-        locationMarkers.forEach { it.remove() }
-        locationMarkers.clear()
+        deleteAllMarkers()
         placeResponse.forEach {
             val location = it.geometry?.location
-            if (location?.lat != null && location.lng != null) {
-                val marker = MarkerOptions().position(LatLng(location.lat, location.lng))
+            if (location?.latitude != null) {
+                val marker = MarkerOptions().position(LatLng(location.latitude, location.longitude))
                         .title(it.name).icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_AZURE))
-                val markerOnMap = view?.addMarker(marker)
+                val markerOnMap = view?.addMarkerToMap(marker)
                 markerOnMap?.let { locationMarkers.add(markerOnMap) }
             }
         }
+    }
+
+    private fun zoomMapAccordingToMarkers() {
+        if (locationMarkers.isNotEmpty()) {
+            val bounds = markersBounds()
+            view?.moveMapCameraToLocation(bounds)
+        }
+    }
+
+    private fun markersBounds(): LatLngBounds {
+        val builder = LatLngBounds.Builder()
+        for (marker in locationMarkers) {
+            builder.include(marker.position)
+        }
+        return builder.build()
+    }
+
+    private fun deleteAllMarkers() {
+        locationMarkers.forEach { it.remove() }
+        locationMarkers.clear()
     }
 }

@@ -1,5 +1,8 @@
 package com.mobile.ziku.gpa.model
 
+import android.location.Location
+import com.mobile.ziku.gpa.moshi.InToLocation
+
 data class PlacesResponse(
         val results: List<PlaceSearched>? = null
 )
@@ -13,10 +16,5 @@ data class PlaceSearched(
 )
 
 data class Geometry(
-        val location: Location? = null
-)
-
-data class Location(
-        val lat: Double? = null,
-        val lng: Double? = null
+        @InToLocation val location: Location? = null
 )

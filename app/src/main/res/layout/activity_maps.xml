@@ -13,10 +13,12 @@
         android:layout_marginEnd="8dp"
         android:layout_marginStart="8dp"
         android:layout_marginTop="8dp"
+        android:padding="4dp"
         android:background="@android:color/white"
         android:clickable="true"
         android:focusable="true"
         android:orientation="horizontal"
+        android:elevation="8dp"
         app:layout_constraintEnd_toStartOf="@+id/progress_bar"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent">
@@ -42,10 +44,13 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginBottom="8dp"
-        android:layout_marginEnd="8dp"
-        android:src="@android:drawable/ic_menu_mylocation"
+        android:layout_marginStart="8dp"
+        android:background="@null"
+        android:elevation="8dp"
+        android:src="@drawable/ic_my_location"
+        android:tint="@color/colorPrimary"
         app:layout_constraintBottom_toTopOf="@+id/search_result_recycler"
-        app:layout_constraintEnd_toEndOf="parent" />
+        app:layout_constraintStart_toStartOf="parent" />
 
     <android.support.v7.widget.RecyclerView
         android:id="@+id/search_result_recycler"
@@ -65,11 +70,14 @@
         android:layout_height="wrap_content"
         android:layout_marginEnd="8dp"
         android:layout_marginStart="8dp"
-        android:src="@android:drawable/ic_menu_mylocation"
+        android:elevation="8dp"
+        android:background="@drawable/button_background"
+        android:src="@drawable/ic_arrow_icon"
+        android:tint="@color/colorPrimary"
+        android:rotation="180"
         app:layout_constraintBottom_toTopOf="@+id/search_result_recycler"
         app:layout_constraintEnd_toEndOf="@+id/map"
-        app:layout_constraintStart_toStartOf="@+id/map"
-        app:srcCompat="@drawable/common_google_signin_btn_icon_dark_focused" />
+        app:layout_constraintStart_toStartOf="@+id/map" />
 
     <ProgressBar
         android:id="@+id/progress_bar"
@@ -80,6 +88,7 @@
         android:layout_marginEnd="8dp"
         android:layout_marginTop="8dp"
         android:visibility="gone"
+        android:elevation="8dp"
         app:layout_constraintBottom_toBottomOf="@+id/search_view_container"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="@+id/search_view_container" />

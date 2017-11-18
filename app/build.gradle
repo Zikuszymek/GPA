@@ -12,6 +12,8 @@ android {
         versionCode 1
         versionName "2017.11.20"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+        multiDexEnabled true
+
     }
     buildTypes {
         release {
@@ -22,6 +24,10 @@ android {
 
     dataBinding {
         enabled = true
+    }
+
+    testOptions {
+        unitTests.returnDefaultValues = true
     }
 
 }

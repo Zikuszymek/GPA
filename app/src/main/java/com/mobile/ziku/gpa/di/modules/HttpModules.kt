@@ -2,6 +2,7 @@ package com.mobile.ziku.gpa.di.modules
 
 import com.jakewharton.retrofit2.adapter.rxjava2.RxJava2CallAdapterFactory
 import com.mobile.ziku.gpa.http.RetrofitService
+import com.mobile.ziku.gpa.moshi.InToLocationAdapter
 import com.squareup.moshi.KotlinJsonAdapterFactory
 import com.squareup.moshi.Moshi
 import dagger.Module
@@ -30,8 +31,9 @@ class HttpModules {
     @Provides
     @Singleton
     fun provideMoshi() : Moshi{
-        var moshi = Moshi.Builder()
+        val moshi = Moshi.Builder()
         moshi.add(KotlinJsonAdapterFactory())
+        moshi.add(InToLocationAdapter())
         return moshi.build()
     }
 

@@ -2,6 +2,7 @@ package com.mobile.ziku.gpa.activities.map
 
 import android.location.Location
 import com.google.android.gms.maps.model.LatLng
+import com.google.android.gms.maps.model.LatLngBounds
 import com.google.android.gms.maps.model.Marker
 import com.google.android.gms.maps.model.MarkerOptions
 import com.mobile.ziku.gpa.activities.BasePresenter
@@ -15,8 +16,9 @@ interface MapsContractor {
     interface View : BaseView<Presenter>{
         fun displayMessage(messageType: MessageType)
         fun handleSearchResult(placeResponse: List<PlaceSearched>)
-        fun addMarker(markerOptions: MarkerOptions) : Marker?
-        fun moveCameraToLocation(latLng: LatLng, zoomLevel: Float)
+        fun addMarkerToMap(markerOptions: MarkerOptions) : Marker?
+        fun moveMapCameraToLocation(latLng: LatLng, zoomLevel: Float)
+        fun moveMapCameraToLocation(bounds : LatLngBounds)
     }
 
     interface Presenter : BasePresenter<View>{

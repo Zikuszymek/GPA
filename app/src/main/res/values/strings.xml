@@ -8,4 +8,8 @@
     <string name="localization_error">Wystąpił problem podczas określania lokalizacji</string>
     <string name="search_result_problem">Wystąpił problem podczas pobierania wyników</string>
     <string name="no_search_result">Brak wyników dla wskazanej frazy</string>
+    <string name="request_location_permission">Aplikacja w celu poprawnego działania, wymaga dostępu do uprawnień lokalizacji</string>
+    <string name="ok">OK</string>
+    <string name="settings">Ustawienia</string>
+
 </resources>

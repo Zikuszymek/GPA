@@ -35,7 +35,7 @@ class AppModule {
 
     @Provides
     @Singleton
-    fun provideSimpleDialog(context: Context) : SimpleDialog = SimpleDialog(context)
+    fun provideSimpleDialog() : SimpleDialog = SimpleDialog()
 
     @Provides
     @Named("API_PLACES_KEY")

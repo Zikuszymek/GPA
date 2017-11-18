@@ -14,8 +14,8 @@ class PlaceViewHolder(val itemBinding : ViewDataBinding, val moveCameraToLocatio
         itemBinding.executePendingBindings()
         itemBinding.root.setOnClickListener {
             val placeLocation = place.geometry?.location
-            if (placeLocation?.lng != null && placeLocation.lat != null) {
-                val cameraLocation = LatLng(placeLocation.lat, placeLocation.lng)
+            if (placeLocation?.longitude != null) {
+                val cameraLocation = LatLng(placeLocation.latitude, placeLocation.longitude)
                 moveCameraToLocation.invoke(cameraLocation, PLACE_ZOOM)
             }
         }
