@@ -11,15 +11,21 @@ import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
 import retrofit2.converter.moshi.MoshiConverterFactory
+import java.util.concurrent.TimeUnit
 import javax.inject.Named
 import javax.inject.Singleton
 
 @Module
 class HttpModules {
 
+    companion object {
+        const val TIMEOUT = 10L
+        const val RETROFIT_URL = "retrofitUrl"
+    }
+
     @Provides
     @Singleton
-    fun provideRetrofitService(@Named("retrofitUrl") retrofitUrl : String, okHttpClient: OkHttpClient, moshi: Moshi) : Retrofit {
+    fun provideRetrofitService(@Named(RETROFIT_URL) retrofitUrl : String, okHttpClient: OkHttpClient, moshi: Moshi) : Retrofit {
         return Retrofit.Builder()
                 .baseUrl(retrofitUrl)
                 .addConverterFactory(MoshiConverterFactory.create(moshi))
@@ -31,10 +37,10 @@ class HttpModules {
     @Provides
     @Singleton
     fun provideMoshi() : Moshi{
-        val moshi = Moshi.Builder()
-        moshi.add(KotlinJsonAdapterFactory())
-        moshi.add(InToLocationAdapter())
-        return moshi.build()
+        return Moshi.Builder()
+                .add(KotlinJsonAdapterFactory())
+                .add(InToLocationAdapter())
+                .build()
     }
 
     @Provides
@@ -49,12 +55,16 @@ class HttpModules {
     fun privideOkHttp() : OkHttpClient {
         val okHttpBuilder =  OkHttpClient.Builder()
         val logging = HttpLoggingInterceptor()
-        logging.setLevel(HttpLoggingInterceptor.Level.BASIC)
-        okHttpBuilder.addInterceptor(logging)
+        logging.level = HttpLoggingInterceptor.Level.BASIC
+        okHttpBuilder.apply {
+            addInterceptor(logging)
+            readTimeout(TIMEOUT, TimeUnit.SECONDS)
+            connectTimeout(TIMEOUT, TimeUnit.SECONDS)
+        }
         return okHttpBuilder.build()
     }
 
     @Provides
-    @Named("retrofitUrl")
+    @Named(RETROFIT_URL)
     fun provideRetrofitUrl():String = "https://maps.googleapis.com/maps/api/place/"
 }

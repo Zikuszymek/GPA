@@ -14,12 +14,13 @@ import io.reactivex.schedulers.Schedulers
 import javax.inject.Inject
 import javax.inject.Named
 import com.google.android.gms.maps.model.LatLngBounds
+import com.mobile.ziku.gpa.di.modules.AppModule.Companion.MY_LOCATION
 
 class MapsPresenter @Inject constructor(
         val compositeDisposable: CompositeDisposable,
         val dataManager: MapsDataManager,
         val fusedLocationProviderClient: FusedLocationProviderClient,
-        @Named("MyLocation") val myLocalization: String
+        @Named(MY_LOCATION) val myLocalization: String
 ) : MapsContractor.Presenter {
 
     var view: MapsContractor.View? = null
@@ -38,14 +39,17 @@ class MapsPresenter @Inject constructor(
     @SuppressWarnings("MissingPermission")
     override fun updateCurrentLocalization() {
         fusedLocationProviderClient.lastLocation
-                .addOnSuccessListener { updateMyCurrentLocationAnMoveCamerra(it) }
+                .addOnSuccessListener { updateMyCurrentLocationAnMoveCamera(it) }
                 .addOnFailureListener { view?.displayMessage(MessageType.LOCALIZATION_ERROR) }
     }
 
     @SuppressWarnings("MissingPermission")
     override fun searchForPlace(place: String) {
         fusedLocationProviderClient.lastLocation
-                .addOnSuccessListener { searchForPlace(place, it) }
+                .addOnSuccessListener {
+                    searchForPlace(place, it)
+                    updateMyCurrentLocation(it)
+                }
                 .addOnFailureListener { view?.displayMessage(MessageType.LOCALIZATION_ERROR) }
     }
 
@@ -70,7 +74,16 @@ class MapsPresenter @Inject constructor(
         )
     }
 
-    private fun updateMyCurrentLocationAnMoveCamerra(location: Location?) {
+    private fun updateMyCurrentLocationAnMoveCamera(location: Location?) {
+        val myLocation = updateMyCurrentLocation(location)
+        if (myLocation != null) {
+            view?.moveMapCameraToLocation(myLocation, MapsActivity.CITY_ZOOM)
+        } else {
+            view?.displayMessage(MessageType.LOCALIZATION_ERROR)
+        }
+    }
+
+    private fun updateMyCurrentLocation(location: Location?): LatLng? {
         if (location != null) {
             val myLocation = LatLng(location.latitude, location.longitude)
             if (myMarker != null) {
@@ -79,10 +92,10 @@ class MapsPresenter @Inject constructor(
                 val markerOptions = MarkerOptions().position(myLocation).title(myLocalization)
                 myMarker = view?.addMarkerToMap(markerOptions)
             }
-            view?.moveMapCameraToLocation(myLocation, MapsActivity.CITY_ZOOM)
+            return myLocation
         } else {
-            view?.displayMessage(MessageType.LOCALIZATION_ERROR)
             myMarker?.remove()
+            return null
         }
     }
 
@@ -108,6 +121,7 @@ class MapsPresenter @Inject constructor(
 
     private fun markersBounds(): LatLngBounds {
         val builder = LatLngBounds.Builder()
+        myMarker?.let { builder.include(it.position) }
         for (marker in locationMarkers) {
             builder.include(marker.position)
         }

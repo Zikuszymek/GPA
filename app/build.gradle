@@ -53,9 +53,11 @@ dependencies {
 
     //Tests
     testImplementation "junit:junit:$jUnitVersion"
-    androidTestImplementation "com.android.support.test:runner:$testRunnerVersion"
-    androidTestImplementation "com.android.support.test.espresso:espresso-core:$expressoVersion"
+    androidTestCompile "com.android.support.test:runner:$testRunnerVersion"
+    androidTestCompile "com.android.support.test.espresso:espresso-core:$expressoVersion"
     testCompile "org.mockito:mockito-core:$mockitoVersion"
+    testImplementation "org.jetbrains.kotlin:kotlin-test-junit:$kotlin_version"
+    androidTestCompile  "com.android.support.test:rules:$testRunnerVersion"
 
     //Dagger
     kapt "com.google.dagger:dagger-compiler:$daggerVersion"

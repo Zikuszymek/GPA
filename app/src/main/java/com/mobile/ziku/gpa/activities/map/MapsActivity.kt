@@ -40,7 +40,7 @@ class MapsActivity : BaseActivity(), OnMapReadyCallback, MapsContractor.View {
     private var listIsExpanded = false
 
     companion object {
-        const val CITY_ZOOM = 12f
+        const val CITY_ZOOM = 15f
         const val PLACE_ZOOM = 17f
         const val CAMERA_ANIMATION_DURATION = 1000
         const val MAP_ZOOM_PADDING = 200
@@ -96,10 +96,12 @@ class MapsActivity : BaseActivity(), OnMapReadyCallback, MapsContractor.View {
     }
 
     private fun collapseRecyclerView() {
-        listIsExpanded = false
-        beginDelayedTransitionForActivity()
-        expandable_button.startAnimation(AnimationUtils.loadAnimation(this, R.anim.rotate_back_icon_animation))
-        search_result_recycler.visibility = View.GONE
+        if(listIsExpanded) {
+            listIsExpanded = false
+            beginDelayedTransitionForActivity()
+            expandable_button.startAnimation(AnimationUtils.loadAnimation(this, R.anim.rotate_back_icon_animation))
+            search_result_recycler.visibility = View.GONE
+        }
     }
 
     private fun initSearchView() {
@@ -164,15 +166,20 @@ class MapsActivity : BaseActivity(), OnMapReadyCallback, MapsContractor.View {
         val messageString = when (messageType) {
             MessageType.LOCALIZATION_ERROR -> R.string.localization_error
             MessageType.NO_RESULT -> {
-                changeAdapterData()
+                handleNoSearchResult()
                 R.string.no_search_result
             }
             MessageType.SEARCH_PROBLEM -> {
-                changeAdapterData()
+                handleNoSearchResult()
                 R.string.search_result_problem
             }
         }
         simpleDialog.showDialog(getString(messageString), this)
+    }
+
+    private fun handleNoSearchResult(){
+        changeAdapterData()
+        collapseRecyclerView()
     }
 
     override fun handleSearchResult(placeResponse: List<PlaceSearched>) {

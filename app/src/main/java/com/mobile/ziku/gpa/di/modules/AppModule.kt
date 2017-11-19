@@ -17,7 +17,10 @@ import javax.inject.Singleton
 @Module
 class AppModule {
 
-    //ToDo Poprawić Scope
+    companion object {
+        const val API_PLACES_KEY = "API_PLACES_KEY"
+        const val MY_LOCATION = "MyLocation"
+    }
 
     @Provides
     @Singleton
@@ -38,12 +41,12 @@ class AppModule {
     fun provideSimpleDialog() : SimpleDialog = SimpleDialog()
 
     @Provides
-    @Named("API_PLACES_KEY")
+    @Named(API_PLACES_KEY)
     @Singleton
     fun provideApiPlacesKey(context: Context):String = context.getString(R.string.google_maps_key)
 
     @Provides
-    @Named("MyLocation")
+    @Named(MY_LOCATION)
     @Singleton
     fun provideMyLocation(context: Context):String = context.getString(R.string.my_location)
 

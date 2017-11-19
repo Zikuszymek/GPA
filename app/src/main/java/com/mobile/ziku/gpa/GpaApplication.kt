@@ -1,5 +1,6 @@
 package com.mobile.ziku.gpa
 
+import android.content.Context
 import com.mobile.ziku.gpa.di.components.DaggerGpaComponent
 import dagger.android.AndroidInjector
 import dagger.android.support.DaggerApplication
@@ -8,10 +9,14 @@ import android.databinding.BindingAdapter
 import android.widget.ImageView
 import com.bumptech.glide.Glide
 
-
 class GpaApplication : DaggerApplication(){
 
     companion object {
+
+        operator fun get(context: Context): GpaApplication {
+            return context.applicationContext as GpaApplication
+        }
+
         @JvmStatic
         @BindingAdapter("app:srcCompat")
         fun setImageUrl(view: ImageView, url: String) {
